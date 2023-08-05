@@ -272,69 +272,103 @@ let showLoader = () => {
 };
 
 let page = 1;
+let perPage = 40;
 let allData = [];
+let lastCard;
 
-async function fetchImages() {
-// async function fetchImages(searchData) {
-	// const URL = `https://pixabay.com/api?key=${PIXABAY_KEY}&q=${searchData}&page=${page}&per_page=40&image_type=photo&orientation=horizontal&safesearch=true`;
-	// const response = await axios.get(URL);
-	try {
-		const response = await getData(page,20);
-		return (response.data);
-	} catch (error) {
-		console.log("fallo esa m", error);
-		Notiflix.Notify.failure('An error occurred');
-	}
-}
-
-form.addEventListener("submit", async (event) => {
-	event.preventDefault();
-	showLoader();
-	// searchData = inputForm.value;
-	// let data = await fetchImages(searchData);
-	try {
-		let data = await fetchImages();
-		console.log(`Hooray! We found ${data.totalHits} images.`);
-		Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-		allData.push(data);
-		for (let i = 0; i < data.hits.length; i++) {
-			newCard(data.hits[i]);
-		}
-
-		lightbox = new SimpleLightbox('.gallery a');
-		lightbox.refresh();
-	} catch (error) {
-		Notiflix.Notify.failure('An error occurred');
-	} finally {
-		hideLoader();
-	}	
-});
-
-let viewer = new IntersectionObserver((inputs,viewer) => {
+let viewer = new IntersectionObserver((inputs) => {
 	console.log(inputs);
-},{
+
+	inputs.forEach(input => {
+		if(input.isIntersecting){
+			page += 1;
+			fetchImages();
+		}
+	})
+}, {
 	rootMargin: '0px 0px 200px 0px',
 	threshold: 1.0
 });
 
-loadButton.addEventListener("click", async ()=> {
-	page += 1;
-		showLoader();
-	// searchData = inputForm.value;
-	// let data = await fetchImages(searchData);
+async function fetchImages() {
+// async function fetchImages(searchData) {
+	// const URL = `https://pixabay.com/api?key=${PIXABAY_KEY}&q=${searchData}&page=${page}&per_page=${perPage}&image_type=photo&orientation=horizontal&safesearch=true`;
+	// const response = await axios.get(URL);
 	try {
-		let data = await fetchImages();
+		const response = await getData(page,20);
+		let data = response.data;
+		if(page === 1) {
+			Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+		}
 		allData.push(data);
 		for (let i = 0; i < data.hits.length; i++) {
 			newCard(data.hits[i]);
 		}
-
+		
+		const showedCards = document.querySelectorAll(".photo-card");
+		
+		if(showedCards.length < data.totalHits) {
+			if(lastCard){
+				viewer.unobserve(lastCard);
+			}
+			
+			lastCard = showedCards[showedCards.length-1];
+			viewer.observe(lastCard);
+		}
+		
 		lightbox = new SimpleLightbox('.gallery a');
 		lightbox.refresh();
+
 	} catch (error) {
 		Notiflix.Notify.failure('An error occurred');
-	} finally {
-		hideLoader();
 	}
+	finally {
+		hideLoader();
+	}	
+};
+
+form.addEventListener("submit", async (event) => {
+	event.preventDefault();
+	showLoader();
+	fetchImages();
+	// searchData = inputForm.value;
+	// let data = await fetchImages(searchData);
+	// try {
+	// 	let data = await fetchImages();
+	// 	console.log(`Hooray! We found ${data.totalHits} images.`);
+	// 	Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+	// 	allData.push(data);
+	// 	for (let i = 0; i < data.hits.length; i++) {
+	// 		newCard(data.hits[i]);
+	// 	}
+
+	// 	lightbox = new SimpleLightbox('.gallery a');
+	// 	lightbox.refresh();
+	// } catch (error) {
+	// 	Notiflix.Notify.failure('An error occurred');
+	// } finally {
+	// 	hideLoader();
+	// }	
 });
 
+// loadButton.addEventListener("click", async ()=> {
+// 	page += 1;
+// 		showLoader();
+// 		fetchImages();
+	// searchData = inputForm.value;
+	// let data = await fetchImages(searchData);
+	// try {
+	// 	let data = await fetchImages();
+	// 	allData.push(data);
+	// 	for (let i = 0; i < data.hits.length; i++) {
+	// 		newCard(data.hits[i]);
+	// 	}
+
+	// 	lightbox = new SimpleLightbox('.gallery a');
+	// 	lightbox.refresh();
+	// } catch (error) {
+	// 	Notiflix.Notify.failure('An error occurred');
+	// } finally {
+	// 	hideLoader();
+	// }
+// });
