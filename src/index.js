@@ -1,4 +1,3 @@
-import { getData } from "./data";
 import axios from "axios";
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
@@ -10,7 +9,6 @@ axios.defaults.headers.common["x-api-key"] = api_key;
 axios.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
 
 const PIXABAY_KEY = '38599637-94ee16ac1abf8bf26f0455f90';
-const URL = "https://pixabay.com/api/?key=" + PIXABAY_KEY + "&q=yellow&image_type=photo&orientation=horizontal&safesearch=true";
 
 document.querySelector("article").remove();
 document.querySelector("html").lang = "en";
@@ -27,6 +25,7 @@ inputForm.type = "text";
 inputForm.name = "searchQuery";
 inputForm.autocomplete = "off";
 inputForm.placeholder = "Search images...";
+inputForm.required = 'true';
 inputForm.classList.add("input-form");
 let submitButton = document.createElement("button");
 submitButton.type = "submit";
@@ -34,18 +33,12 @@ submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="15px" 
 submitButton.classList.add("submit-button");
 let gallery = document.createElement("ul");
 gallery.classList.add("gallery");
-let loadButton = document.createElement("button");
-loadButton.type = "submit";
-loadButton.textContent = "Load more";
-loadButton.classList.add("load-button");
-loadButton.display = "none";
 
 body.appendChild(header);
 header.appendChild(form);
 form.appendChild(inputForm);
 form.appendChild(submitButton);
 body.appendChild(gallery);
-body.appendChild(loadButton);
 let loaderContainer = document.createElement("div");
 loaderContainer.classList.add("loader-container");
 let loader = document.createElement("div");
@@ -277,8 +270,6 @@ let allData = [];
 let lastCard;
 
 let viewer = new IntersectionObserver((inputs) => {
-	console.log(inputs);
-
 	inputs.forEach(input => {
 		if(input.isIntersecting){
 			page += 1;
@@ -290,13 +281,18 @@ let viewer = new IntersectionObserver((inputs) => {
 	threshold: 1.0
 });
 
+// async function fetchImages() {
 async function fetchImages() {
-// async function fetchImages(searchData) {
-	// const URL = `https://pixabay.com/api?key=${PIXABAY_KEY}&q=${searchData}&page=${page}&per_page=${perPage}&image_type=photo&orientation=horizontal&safesearch=true`;
-	// const response = await axios.get(URL);
+	searchData = inputForm.value;
+	const URL = `https://pixabay.com/api?key=${PIXABAY_KEY}&q=${searchData}&page=${page}&per_page=${perPage}&image_type=photo&orientation=horizontal&safesearch=true`;
 	try {
-		const response = await getData(page,20);
+		const response = await axios.get(URL);
+		// const response = await getData(page,20);
 		let data = response.data;
+		if(data.totalHits === 0) {
+			Notiflix.Notify.warning("Sorry, there are no images matching your search query. Please try again.");
+			return;
+		}
 		if(page === 1) {
 			Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
 		}
@@ -331,44 +327,5 @@ form.addEventListener("submit", async (event) => {
 	event.preventDefault();
 	showLoader();
 	fetchImages();
-	// searchData = inputForm.value;
-	// let data = await fetchImages(searchData);
-	// try {
-	// 	let data = await fetchImages();
-	// 	console.log(`Hooray! We found ${data.totalHits} images.`);
-	// 	Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-	// 	allData.push(data);
-	// 	for (let i = 0; i < data.hits.length; i++) {
-	// 		newCard(data.hits[i]);
-	// 	}
-
-	// 	lightbox = new SimpleLightbox('.gallery a');
-	// 	lightbox.refresh();
-	// } catch (error) {
-	// 	Notiflix.Notify.failure('An error occurred');
-	// } finally {
-	// 	hideLoader();
-	// }	
 });
 
-// loadButton.addEventListener("click", async ()=> {
-// 	page += 1;
-// 		showLoader();
-// 		fetchImages();
-	// searchData = inputForm.value;
-	// let data = await fetchImages(searchData);
-	// try {
-	// 	let data = await fetchImages();
-	// 	allData.push(data);
-	// 	for (let i = 0; i < data.hits.length; i++) {
-	// 		newCard(data.hits[i]);
-	// 	}
-
-	// 	lightbox = new SimpleLightbox('.gallery a');
-	// 	lightbox.refresh();
-	// } catch (error) {
-	// 	Notiflix.Notify.failure('An error occurred');
-	// } finally {
-	// 	hideLoader();
-	// }
-// });
