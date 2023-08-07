@@ -1,18 +1,7 @@
-// import { getData } from "./data";
 import axios from "axios";
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-
-const api_key = "live_bhJOs1wV8iLJ1xYobAYWPqV9wHT0wjvd1E4zAjM72wpSRwYLxRA6qBRKcLBfvysR";
-
-axios.defaults.headers.common["x-api-key"] = api_key;
-axios.defaults.headers.common["Content-Type"] = "application/json";
-axios.defaults.headers.common["Allow"] = "OPTIONS, POST, GET";
-axios.defaults.headers.common["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
-axios.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
-axios.defaults.headers.common["Access-Control-Allow-Methods"] = "GET, POST, HEAD";
-axios.defaults.headers.common["Access-Control-Expose-Headers"] = "X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset";
 
 const PIXABAY_KEY = '38599637-94ee16ac1abf8bf26f0455f90';
 
@@ -292,7 +281,6 @@ async function fetchImages() {
 	const URL = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${searchData}&page=${page}&per_page=${perPage}&image_type=photo&orientation=horizontal&safesearch=true`;
 	try {
 		const response = await axios.get(URL);
-		// const response = await getData(page,20);
 		let data = response.data;
 		if(data.totalHits === 0) {
 			Notiflix.Notify.warning("Sorry, there are no images matching your search query. Please try again.");
